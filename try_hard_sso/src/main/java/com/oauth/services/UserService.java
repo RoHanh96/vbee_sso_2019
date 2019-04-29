@@ -9,4 +9,5 @@ import com.oauth.entity.User;
 @Service
 public interface UserService {
 	public User getUserByName(String username);
+	public void save(User user);
 }

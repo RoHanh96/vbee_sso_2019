@@ -1,6 +1,9 @@
 package com.oauth.entity;
 
+import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -9,47 +12,51 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.validation.constraints.NotEmpty;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "role")
-public class Role {
+@Table(name = "roles")
+public class Role implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "role_id")
-    private int roleId;
+    @Column(name = "id")
+    private int id;
 
-    @Column(name = "role")
-    private String role;
+    @Column(name = "name")
+    @NotEmpty
+    private String name;
+    
+    @OneToMany(mappedBy ="role")
+    private List<User> users;
 
+    public void setUsers(List<User> users) {
+        this.users = users;
+    }
+    
     public Role() {
     }
 
-    public int getRoleId() {
-        return roleId;
+    public int getId() {
+        return id;
     }
 
-    public void setRoleId(int roleId) {
-        this.roleId = roleId;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getRole() {
-        return role;
+    public String getName() {
+        return name;
     }
 
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-//	public List<User> getUsers() {
-//		return users;
-//	}
-//
-//	public void setUsers(List<User> users) {
-//		this.users = users;
-//	}
-    
-    
+    public void setName(String name) {
+        this.name = name;
+    }    
 }

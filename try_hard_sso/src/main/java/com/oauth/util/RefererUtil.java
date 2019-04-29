@@ -8,7 +8,7 @@ public class RefererUtil {
 	public static String getRedirectUrl(final HttpServletRequest request) {
 		final String referer = request.getHeader("Referer");
 		System.out.println("referer:" + referer);
-		String[] arr = referer.split("=");
+		String[] arr = referer.split("redirect=");
 		if(arr.length == 1) {
 			return referer;
 		}

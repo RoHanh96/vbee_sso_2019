@@ -7,8 +7,9 @@
     <title>Protected Resource Service</title>
 </head>
 <body>
-    <h2>Hello, <%= request.getAttribute("username") %></h2>
-    <h2><%= request.getAttribute("userData") %></h2>
+    <h2>Hello, ${user.getUsername()}</h2>
+    <h2>Email: ${user.getEmail()}</h2>
+    <h2>Role: ${user.getRole().getName()}</h2>
     
     <a href="/logout">Logout</a>
 </body>
