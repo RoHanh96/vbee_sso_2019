@@ -40,7 +40,6 @@
         <artifactId>tomcat-embed-jasper</artifactId>
         <scope>provided</scope>
     </dependency>
-    
     <dependency>
     <groupId>commons-codec</groupId>
     <artifactId>commons-codec</artifactId>

@@ -102,6 +102,7 @@ public class LoginController {
 	@RequestMapping(value = "/getJwtToken", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
 	@ResponseBody
 	public String getJwtToken() {
+		System.out.println("token in server " + this.jwtTokenStore);
 		return jwtTokenStore;
 	}
 	
@@ -119,8 +120,10 @@ public class LoginController {
 	 * Api recevive redirectUrl
 	 */
 	@RequestMapping(value = "/setRedirectUrl", method = RequestMethod.POST)
-	public void receiveRedirectUrl(@RequestBody String redirectUrl) {
+	@ResponseBody
+	public String receiveRedirectUrl(@RequestBody String redirectUrl) {
 		this.redirectUrl = redirectUrl;
+		return this.redirectUrl;
 	}
 	
 	

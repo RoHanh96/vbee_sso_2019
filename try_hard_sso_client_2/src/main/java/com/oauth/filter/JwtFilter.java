@@ -23,7 +23,7 @@ import com.oauth.util.SessionUtil;
 public class JwtFilter extends OncePerRequestFilter {
 	private static final String jwtTokenSSOName = "JWT-TOKEN-SERVER-SSO";
 	private static final String jwtTokenSessionName = "JWT-TOKEN-SEVER-SESSION";
-	private static final String domainClient = "demo1.com";
+	private static final String domainClient = "demo2.com";
 	private static final String tokenApi = "http://localhost:8081/getJwtToken";
 	private static final String sendRedirectApi = "http://localhost:8081/setRedirectUrl";
 	
@@ -60,17 +60,12 @@ public class JwtFilter extends OncePerRequestFilter {
 		}
 		else {
 			if(CookieUtil.getValue(request, jwtTokenSessionName).equals(SessionUtil.getAttribute(request, jwtTokenSessionName))) {
-				System.out.println("Lan dang nhap thu 2. Khong request len server. Dang nhap thanh cong");
+				System.out.println("Lan dang nhap thu 2. Khong request len server. Dang nhap thanh cong.");
 				filterChain.doFilter(request, response);
 			}
 		}
 	}
 	
-	/**
-	 * Hàm convert token nhận được từ server sang token ở client theo giải thuật nhất định (md5)
-	 * @param token
-	 * @return
-	 */
 	private String encodeJwtToken(String token) {
 		//Must be 16 bytes long
 		String key = "abcdabcdabcdabcd";
