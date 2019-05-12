@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN" "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+	<!-- Templates -->
+	<definition name="baseLayout" template="/WEB-INF/jsp/layout/base-layout.jsp">
+		<put-attribute name="navigation" value="/WEB-INF/jsp/layout/navigation.jsp" />
+		<put-attribute name="body" value="" />
+		<put-attribute name="footer" value="/WEB-INF/jsp/layout/footer.jsp" />
+	</definition>
+
+	<definition name="error" template="/WEB-INF/jsp/layout/base-welcome.jsp">
+		<put-attribute name="body" value="/WEB-INF/jsp/pages/error.jsp" />
+		<put-attribute name="footer" value="/WEB-INF/jsp/layout/footer.jsp" />
+	</definition>
+	
+	<definition name="login" template="/WEB-INF/jsp/layout/base-welcome.jsp">
+		<put-attribute name="body" value="/WEB-INF/jsp/pages/login.jsp" />
+		<put-attribute name="footer" value="/WEB-INF/jsp/layout/footer.jsp" />
+	</definition>
+
+	<definition name="dashboard" extends="baseLayout">
+		<put-attribute name="body" value="/WEB-INF/jsp/pages/dashboard.jsp" />
+	</definition>
+	
+	<definition name="newspapers" extends="baseLayout">
+		<put-attribute name="body" value="/WEB-INF/jsp/pages/newspapers.jsp" />
+	</definition>
+	
+	<definition name="newspapers-detail" extends="baseLayout">
+		<put-attribute name="body" value="/WEB-INF/jsp/pages/newspapers-detail.jsp" />
+	</definition>
+	
+	<definition name="newspapers-create" extends="baseLayout">
+		<put-attribute name="body" value="/WEB-INF/jsp/pages/newspapers-create.jsp" />
+	</definition>
+	
+	<definition name="advertisements" extends="baseLayout">
+		<put-attribute name="body" value="/WEB-INF/jsp/pages/advertisements.jsp" />
+	</definition>
+	
+	<definition name="advertisement-create" extends="baseLayout">
+		<put-attribute name="body" value="/WEB-INF/jsp/pages/advertisement-create.jsp" />
+	</definition>
+	
+	<definition name="sources" extends="baseLayout">
+		<put-attribute name="body" value="/WEB-INF/jsp/pages/sources.jsp" />
+	</definition>
+
+</tiles-definitions>

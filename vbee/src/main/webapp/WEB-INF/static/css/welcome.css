@@ -1,0 +1,77 @@
+.card-login {
+	max-width: 25rem;
+}
+
+.card-register {
+    max-width: 40rem;
+}
+
+.ml-auto, .mx-auto {
+	margin-left: auto !important;
+}
+
+.mr-auto, .mx-auto {
+	margin-right: auto !important;
+}
+
+.mt-5, .my-5 {
+	margin-top: 3rem !important;
+}
+
+.card {
+	position: relative;
+	display: -ms-flexbox;
+	display: flex;
+	-ms-flex-direction: column;
+	flex-direction: column;
+	min-width: 0;
+	word-wrap: break-word;
+	background-color: #fff;
+	background-clip: border-box;
+	border: 1px solid rgba(0, 0, 0, .125);
+	border-radius: .25rem;
+}
+
+.card-header:first-child {
+	border-radius: calc(.25rem - 1px) calc(.25rem - 1px) 0 0;
+}
+
+.card-header {
+	padding: .75rem 1.25rem;
+	margin-bottom: 0;
+	background-color: rgba(0, 0, 0, .03);
+	border-bottom: 1px solid rgba(0, 0, 0, .125);
+	text-align: center;
+}
+
+.card-body {
+	-ms-flex: 1 1 auto;
+	flex: 1 1 auto;
+	padding: 1.25rem;
+}
+
+.mt-3, .my-3 {
+	margin-top: 1rem !important;
+}
+
+.d-block {
+	display: block !important;
+}
+
+.small, small {
+	font-size: 80%;
+	font-weight: 400;
+}
+
+.bg-dark {
+	background-color: #343a40 !important;
+}
+
+.form-row {
+	display: -ms-flexbox;
+	display: flex;
+	-ms-flex-wrap: wrap;
+	flex-wrap: wrap;
+	margin-right: -5px;
+	margin-left: -5px;
+}
