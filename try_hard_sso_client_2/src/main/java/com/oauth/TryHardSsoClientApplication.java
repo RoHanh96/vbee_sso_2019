@@ -19,9 +19,14 @@ public class TryHardSsoClientApplication extends SpringBootServletInitializer {
 	private String authService;
 	
 	@Bean
+	public JwtFilter jwFilter() {
+		return new JwtFilter();
+	}
+	
+	@Bean
 	public FilterRegistrationBean jwtFilter() {
 		final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
-		registrationBean.setFilter(new JwtFilter());
+		registrationBean.setFilter(jwFilter());
 		registrationBean.setInitParameters(Collections.singletonMap("services.auth", authService));
 		registrationBean.addUrlPatterns("/protected-resource");
 		return registrationBean;

@@ -41,6 +41,8 @@ public class UserValidator implements Validator {
         }
         
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "email", "NotEmpty");
-        
+        if (userServiceImpl.getUserByEmail(user.getEmail()) != null) {
+            errors.rejectValue("email", "Duplicate.userForm.email");
+        }
 	}
 }

@@ -7,10 +7,10 @@
     <title>Protected Resource Service</title>
 </head>
 <body>
-    <h2>Hello, ${user.getUsername()}</h2>
-    <h2>Email: ${user.getEmail()}</h2>
-    <h2>Role: ${user.getRole().getName()}</h2>
+    <h2>User id: <%= session.getAttribute("userId") %></h2>
+    <h2>User name: <%= session.getAttribute("userName") %></h2>
     
     <a href="/logout">Logout</a>
+    <a href="/updateInfo">Update</a>
 </body>
 </html>

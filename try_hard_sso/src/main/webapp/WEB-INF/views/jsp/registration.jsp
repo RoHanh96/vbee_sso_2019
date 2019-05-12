@@ -1,4 +1,6 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<%@ page language="java" contentType="text/html; charset=utf-8"
+	pageEncoding="utf-8"%>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <c:set var="contextPath" value="${pageContext.request.contextPath}"/>
 <html>
@@ -10,10 +12,10 @@
 </head>
 <body>
 	<form:form method="POST" action="/registration" modelAttribute="userForm" class="form-signin">
-	 <h2 class="form-signin-heading">Create your account</h2>
+	 <h2 class="form-signin-heading">Đăng ký tài khoản</h2>
             <spring:bind path="username">
                 <div class="form-group ${status.error ? 'has-error' : ''}">
-                    <form:input type="text" path="username" class="form-control" placeholder="Username"
+                    <form:input type="text" path="username" class="form-control" placeholder="Tên người dùng"
                                 autofocus="true"></form:input>
                     <form:errors path="username"></form:errors>
                 </div>
@@ -21,7 +23,7 @@
 
             <spring:bind path="password">
                 <div class="form-group ${status.error ? 'has-error' : ''}">
-                    <form:input type="password" path="password" class="form-control" placeholder="Password"></form:input>
+                    <form:input type="password" path="password" class="form-control" placeholder="Mật khẩu"></form:input>
                     <form:errors path="password"></form:errors>
                 </div>
             </spring:bind>
@@ -33,10 +35,23 @@
                     <form:errors path="email"></form:errors>
                 </div>
             </spring:bind>
+            <input name="callbackUrl" type= "hidden" id="callbackUrl">
 
-            <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>     
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Đăng ký</button>     
 	</form:form>
 
 </body>
+<script>
+	var url_string = window.location.href; //window.location.href
+	var url = new URL(url_string);
+	var c = url.searchParams.get("callbackUrl");
+	console.log(c);
+	if(c!=null){
+		localStorage.setItem("callbackUrl", c);
+	}
+	var error = url.searchParams.get("error");
+	document.getElementById("callbackUrl").value = localStorage.getItem("callbackUrl");
+	document.getElementById("error").innerHTML = error;
+</script>
 
 </html>

@@ -12,14 +12,25 @@
 </head>
 <body>
 <form method="POST" action="/login" modelAttribute="userFormLogin" class="form-signin">
-    <h2 class="form-heading">Log in</h2>
-    <input name="username" type="text" class="form-control" placeholder="Username"
+    <h2 class="form-heading">Đăng nhập</h2>
+    <input name="username" type="text" class="form-control" placeholder="Tên người dùng"
            autofocus="true"/>
-    <input name="password" type="password"  class="form-control" placeholder="Password"/>
-    <h2>${error}</h2>
+    <input name="password" type="password"  class="form-control" placeholder="Mật khẩu"/>
+    <input name="callbackUrl" type= "hidden" id="callbackUrl">
+    <h4 class="has-error" id="error"></h4>
     <br/>
-    <button class="btn btn-lg btn-primary btn-block" type="submit">Log In</button>
-   <h4 class="text-center"><a href="/registration">Create an account</a></h4>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Đăng nhập</button>
+   <h4 class="text-center"><a id="registration" >Tạo tài khoản</a></h4>
 </form>
 </body>
+<script>
+	var url_string = window.location.href; //window.location.href
+	var url = new URL(url_string);
+	var c = url.searchParams.get("callbackUrl");
+	console.log(c);
+	var error = url.searchParams.get("error");
+	document.getElementById("callbackUrl").value = c;
+	document.getElementById("error").innerHTML = error;
+	document.getElementById("registration").href = "/registration?callbackUrl="+c;
+</script>
 </html>

@@ -25,11 +25,26 @@ public class UserServiceImpl implements UserService {
 	public User getUserByName(String username) {
 		// TODO Auto-generated method stub
 		User user = null;
-		try {
-			user = userRepository.findByUsername(username);
-		} catch (Exception e) {
-			// TODO: handle exception
-			return user;
+		if(!username.equals(null)) {
+			try {
+				user = userRepository.findByUsername(username);
+			} catch (Exception e) {
+				// TODO: handle exception
+				return user;
+			}
+		}
+		return user;
+	}
+	
+	@Override
+	public User getUserByEmail(String email) {
+		User user = null;
+		if(!email.equals(null)) {
+			try {
+				user = userRepository.findByEmail(email);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
 		}
 		return user;
 	}

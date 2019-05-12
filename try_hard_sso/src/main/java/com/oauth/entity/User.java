@@ -41,22 +41,12 @@ public class User implements Serializable {
 	
 	@Column(name = "email")
 	@Email
-	@NotEmpty
 	private String email;
 	
-//	@ManyToMany(cascade=CascadeType.MERGE)
-//    @JoinTable(
-//       name="user_role",
-//       joinColumns={@JoinColumn(name="USER_ID", referencedColumnName="ID")},
-//       inverseJoinColumns={@JoinColumn(name="ROLE_ID", referencedColumnName="ID")})
-//    private List<Role> roles;
-//	public List<Role> getRoles() {
-//		return roles;
-//	}
 	@ManyToOne
 	@JoinColumn(name = "role_id", nullable = false)
 	private Role role;
-
+	
 	public void setRole(Role role) {
 		this.role = role;
 	}
