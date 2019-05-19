@@ -46,3 +46,19 @@ body {
 .has-error {
     color: red
 }
+
+.generic-container {
+  background-color: #EAE7E7;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 0 30px black;
+}
+
+.floatRight{
+	float:right;
+	margin-right: 18px;
+}
+
+.authbar{
+	margin-bottom:15px;
+}

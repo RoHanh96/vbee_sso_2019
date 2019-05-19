@@ -1,8 +1,5 @@
 package com.oauth.util;
 
-import java.util.Set;
-
-import javax.validation.ConstraintViolation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,9 +11,8 @@ import com.oauth.entity.User;
 import com.oauth.services.UserServiceImpl;
 
 @Component
-public class UserValidator implements Validator {
-
-	@Autowired UserServiceImpl userServiceImpl;
+public class UserValidatorEdit implements Validator {
+@Autowired UserServiceImpl userServiceImpl;
 	
 	@Override
 	public boolean supports(Class<?> aClass) {
@@ -30,19 +26,16 @@ public class UserValidator implements Validator {
         if (user.getUsername().length() < 6 || user.getUsername().length() > 32) {
             errors.rejectValue("username", "Size.userForm.username");
         }
-        
-        if (userServiceImpl.getUserByName(user.getUsername()) != null) {
+        User userInDB = userServiceImpl.getUserById(user.getId());
+//        System.out.println(userInDB.getUsername() + user.getUsername() + (userInDB.getUsername().equalsIgnoreCase(user.getUsername())));
+        if (userInDB != null && !(userInDB.getUsername().equalsIgnoreCase(user.getUsername()))) {
             errors.rejectValue("username", "Duplicate.userForm.username");
         }
         
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "password", "NotEmpty");
-        if (user.getPassword().length() < 8 || user.getPassword().length() > 32) {
-            errors.rejectValue("password", "Size.userForm.password");
-        }
-        
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "email", "NotEmpty");
-        System.out.println("email "+ user.getEmail() + userServiceImpl.getUserByEmail(user.getEmail()));
-        if (userServiceImpl.getUserByEmail(user.getEmail()) != null) {
+        User userInDB1 = userServiceImpl.getUserByEmail(user.getEmail());
+        System.out.println(userInDB.getEmail() + " " + user.getEmail() );
+        if (userInDB1 != null && !(userInDB1.getEmail().equalsIgnoreCase(userInDB.getEmail()))) {
             errors.rejectValue("email", "Duplicate.userForm.email");
         }
 	}

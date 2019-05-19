@@ -39,11 +39,12 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User getUserByEmail(String email) {
 		User user = null;
-		if(!email.equals(null)) {
+		if(email!=null) {
 			try {
 				user = userRepository.findByEmail(email);
 			} catch (Exception e) {
 				// TODO: handle exception
+				System.out.println(e.toString());
 			}
 		}
 		return user;
@@ -63,5 +64,34 @@ public class UserServiceImpl implements UserService {
 			role.setName(defaultRole);
 			roleRepository.save(role);
 		}
+	}
+
+	@Override
+	public List<User> getAllUser() {
+		return userRepository.getAllUser();
+	}
+
+	@Override
+	public User getUserById(Integer userId) {
+		// TODO Auto-generated method stub
+		return userRepository.findByUserId(userId);
+	}
+
+	@Override
+	public void update(User user) {
+		// TODO Auto-generated method stub
+		User updateUser = userRepository.getOne(user.getId());
+		updateUser.setEmail(user.getEmail());
+		updateUser.setUsername(user.getUsername());
+		updateUser.setRole(user.getRole());
+		if(updateUser != null) {
+			userRepository.save(updateUser);
+		}
+	}
+
+	@Override
+	public void deleteById(User user) {
+		// TODO Auto-generated method stub
+		userRepository.delete(user);
 	}
 }

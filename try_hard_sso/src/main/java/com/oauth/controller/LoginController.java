@@ -1,6 +1,7 @@
 package com.oauth.controller;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -8,6 +9,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
@@ -34,7 +36,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.WebUtils;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oauth.entity.User;
 import com.oauth.services.UserServiceImpl;
@@ -52,13 +56,13 @@ public class LoginController {
 	private static final String jwtTokenSessionName = "JWT-TOKEN-SESSION";
 	private static final String signingKey = "signingKey";
 	private static final String domainServer = "localhost";
+	private static final String roleAdmin = "ROLE_ADMIN";
 	
 	@Autowired
 	private UserServiceImpl userService;
 	
 	private String jwtTokenStore;
 	private String jwtTokenStoreSession;
-	private User user;
 	private boolean checkLogout = false;
 	private String randomToken;
 	private HashSet<String> listUrl = new HashSet<String>();
@@ -72,8 +76,34 @@ public class LoginController {
 		return "redirect:/login";
 	}
 	
+	@RequestMapping(value = "/list_user", method = RequestMethod.GET)
+	public String listUser(Model model, HttpServletRequest request) {
+		if(!(LoginController.getUserRole(request).equals(roleAdmin))) {
+			return "access_denied";
+		}
+		List<User> users = userService.getAllUser();
+		String userData = JwtUtil.getSubject(request, jwtTokenCookieName, signingKey);
+		User userLogined = null;
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			userLogined = mapper.readValue(userData, User.class);
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		model.addAttribute("userLogined", userLogined);
+		model.addAttribute("listUser", users);
+		return "list_user";
+	}
+	
 	@RequestMapping(value = "/login")
-	public String login(Model model, HttpServletRequest request, @RequestParam(value = "callbackUrl") String redirectUrl, HttpServletResponse response) {
+	public String login(Model model, HttpServletRequest request, @RequestParam(value = "callbackUrl", required = false) String redirectUrl, HttpServletResponse response) {
 		if(this.checkLogout == true) {
 			try {
 				Cookie cookie = WebUtils.getCookie(request, jwtTokenCookieName);
@@ -94,9 +124,11 @@ public class LoginController {
 				System.out.println(e.toString());
 			}
 			randomToken = StringUtil.randomAlphaNumeric(10);
-			this.addDomainUrl(redirectUrl);
+//			this.addDomainUrl(redirectUrl);
+			if(LoginController.getUserRole(request).equals(roleAdmin)) {
+				return "redirect:/list_user";
+			}
 			return "redirect:" + redirectUrl + "?token=" + randomToken;
-//			return "redirect:" + redirectUrl;
 		}
 		model.addAttribute("userFormLogin", new User());
 		System.out.println("cookie at 8081" + CookieUtil.getValue(request, jwtTokenCookieName));
@@ -104,14 +136,18 @@ public class LoginController {
 	}
 	
 	@RequestMapping(value = "login", method = RequestMethod.POST)
-	public String login(HttpServletResponse httpServletResponse, @ModelAttribute("userFormLogin") User user, HttpServletRequest request, Model model, @RequestParam(value = "callbackUrl") String callbackUrl) {
+	public String login(HttpServletResponse httpServletResponse, @ModelAttribute("userFormLogin") User user, HttpServletRequest request, Model model, @RequestParam(value = "callbackUrl", required = false) String callbackUrl) {
 		User userLogin = userService.getUserByName(user.getUsername());
 		if(user.getUsername() == null || user.getPassword() == null || userLogin == null || !userLogin.getPassword().equals(user.getPassword())) {
 			model.addAttribute("error","Invalid username or password");
-			return "redirect:" + "http://localhost:8081/login" + "?callbackUrl=" + callbackUrl;
+			if(callbackUrl != null) {
+				return "redirect:" + "http://localhost:8081/login" + "?callbackUrl=" + callbackUrl;
+			}
+			else return "redirect:" + "http://localhost:8081/login";
 		}
 		ObjectMapper mapper = new ObjectMapper();
 		String userData = new String();
+		userLogin.setPassword("");
 		try {
 			userData = mapper.writeValueAsString(userLogin);
 		} catch (JsonProcessingException e) {
@@ -119,12 +155,21 @@ public class LoginController {
 			e.printStackTrace();
 		}
 		System.out.println("userData " + userData);
-		String token = JwtUtil.generateToken(signingKey, userData);
+		String token = null;
+		try {
+			token = JwtUtil.generateToken(signingKey, userData);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		CookieUtil.create(httpServletResponse, jwtTokenCookieName, token, false, -1, domainServer);
 		SessionUtil.setAtribute(request, jwtTokenSessionName, token);
 //		this.checkLogout = false;
 		httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-		return "redirect:" + "http://localhost:8081/login" + "?callbackUrl=" + callbackUrl;
+		if(userLogin.getRole().getName().equals("ROLE_ADMIN")) {
+			return "redirect:" + "http://localhost:8081/list_user";
+		}
+		else return "redirect:" + "http://localhost:8081/login" + "?callbackUrl=" + callbackUrl;
 	}
 	
 	@RequestMapping(value = "/getJwtToken/{token}", method = RequestMethod.GET)
@@ -180,6 +225,14 @@ public class LoginController {
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 	
+	@RequestMapping(value="clearCookieJs", method= RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<String> clearCookieNodeJS(@RequestBody String checkLogout){
+		if(checkLogout.contains("1")) {
+			this.checkLogout = true;
+		}
+		return new ResponseEntity<String>(HttpStatus.OK);
+	}
 	@RequestMapping(value = "/getCheckLogoutStatus", method = RequestMethod.GET)
 	@ResponseBody
 	public String getCheckLogoutStatus() {
@@ -210,6 +263,7 @@ public class LoginController {
 		return domain.startsWith("www.") ? domain.substring(4) : domain;
 	}
 	
+	//Ham xu li domain URL
 	private void addDomainUrl(String url) {
 		String domain = null;
 		try {
@@ -222,5 +276,29 @@ public class LoginController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
+	}
+	
+	//Ham authorization
+	public  static String getUserRole(HttpServletRequest request) {
+		String userData = JwtUtil.getSubject(request, jwtTokenCookieName, signingKey);
+		if(userData == null) return null;
+		ObjectMapper mapper = new ObjectMapper();
+		User user = null;
+		try {
+			user = mapper.readValue(userData, User.class);
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(user!=null) {
+			return user.getRole().getName();
+		}
+		return null;
 	}
 }

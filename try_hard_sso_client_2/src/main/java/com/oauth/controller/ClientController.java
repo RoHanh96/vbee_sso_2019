@@ -23,17 +23,17 @@ public class ClientController {
 	private static final String clearCookieApi = "http://localhost:8081/clearCookie";
 	public static final String domain = "demo2.com";
 	
-	private String userId = null;
-	private boolean setSessionNull = false;
+//	private String userId = null;
+//	private boolean setSessionNull = false;
 	
 	@RequestMapping("/")
 	public String home(HttpServletRequest request) {
-		if(this.setSessionNull) {
-			
-			SessionUtil.setAtribute(request, "access-token", null);
-			System.out.println("session val: " + SessionUtil.getAttribute(request, "access-token"));
-			this.setSessionNull = true;
-		}
+//		if(this.setSessionNull) {
+//			
+//			SessionUtil.setAtribute(request, "access-token", null);
+//			System.out.println("session val: " + SessionUtil.getAttribute(request, "access-token"));
+//			this.setSessionNull = false;
+//		}
 		return "redirect:/protected-resource";
 	}
 	
@@ -44,24 +44,24 @@ public class ClientController {
 	
 	@RequestMapping("/logout")
 	public String logout(HttpServletResponse httpServletResponse, HttpServletRequest request) {
-//		CookieUtil.clear(httpServletResponse, jwtTokenSessionName, domain);
+		CookieUtil.clear(httpServletResponse, jwtTokenSessionName, domain);
 		System.out.println("vao logout");
 		RestTemplate rest = new RestTemplate();
 		boolean checkLogout = true;
 		rest.postForObject(clearCookieApi, checkLogout, String.class);
-		this.userId = SessionUtil.getAttribute(request, "userId").toString();
-		rest.postForObject("http://localhost:8081/doLogout", SessionUtil.getAttribute(request, "userId"), String.class);
+//		this.userId = SessionUtil.getAttribute(request, "userId").toString();
+//		rest.postForObject("http://localhost:8081/doLogout", SessionUtil.getAttribute(request, "userId"), String.class);
 		return "redirect:/";
 	}
 	
-	@RequestMapping(value = "/doLogout", method = RequestMethod.POST)
-	@ResponseBody
-	public ResponseEntity<String> doLogout( @RequestBody String userId){
-		if(userId.equals(this.userId)) {
-			this.setSessionNull = true;
-		}
-		return new ResponseEntity<String>(HttpStatus.OK);
-	}
+//	@RequestMapping(value = "/doLogout", method = RequestMethod.POST)
+//	@ResponseBody
+//	public ResponseEntity<String> doLogout( @RequestBody String userId){
+//		if(userId.equals(this.userId)) {
+//			this.setSessionNull = true;
+//		}
+//		return new ResponseEntity<String>(HttpStatus.OK);
+//	}
 	public String updateUserInfo() {
 		return "updateForm";
 	}

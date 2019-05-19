@@ -4,7 +4,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <html lang="en">
 <head>
-    <title></title>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 	<link href="/resources/css/bootstrap.min.css" rel="stylesheet">
     <link href="/resources/css/common.css" rel="stylesheet">
@@ -28,8 +27,12 @@
 	var url = new URL(url_string);
 	var c = url.searchParams.get("callbackUrl");
 	console.log(c);
+	if(c!=null){
+		localStorage.setItem("callbackUrl", c);
+	}
 	var error = url.searchParams.get("error");
-	document.getElementById("callbackUrl").value = c;
+	console.log(localStorage.getItem("callbackUrl"));
+	document.getElementById("callbackUrl").value = localStorage.getItem("callbackUrl");
 	document.getElementById("error").innerHTML = error;
 	document.getElementById("registration").href = "/registration?callbackUrl="+c;
 </script>

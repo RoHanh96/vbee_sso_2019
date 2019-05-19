@@ -77,8 +77,8 @@ public class ArticleViewController {
 
 	// Return VIEW
 
-	private String userId = null;
-	private boolean setSessionNull = false;
+//	private String userId = null;
+//	private boolean setSessionNull = false;
 	
 	@GetMapping("/")
 	public ModelAndView home(HttpServletRequest request) {
@@ -89,10 +89,10 @@ public class ArticleViewController {
 		model.addObject("urlEditor", config.getLoginUrl() + "/user");
 		
 		//check logout
-		if(this.setSessionNull) {
-			SessionUtil.setAtribute(request, "access-token", null);
-			this.setSessionNull = true;
-			}
+//		if(this.setSessionNull) {
+//			SessionUtil.setAtribute(request, "access-token", null);
+//			this.setSessionNull = false;
+//			}
 		model.setViewName("dashboard");
 		return model;
 	}
@@ -195,12 +195,12 @@ public class ArticleViewController {
 	public ResponseEntity<ResponseMessage> logout(HttpServletRequest request, HttpServletResponse response) {
 		String jwtTokenSessionName = "access-token";
 		String domain = "demo3.com";
-//		CookieUtil.clear(response, jwtTokenSessionName, domain);
+		CookieUtil.clear(response, jwtTokenSessionName, domain);
 		RestTemplate rest = new RestTemplate();
 		boolean checkLogout = true;
 		rest.postForObject(config.getSsoUrl() + "/clearCookie", checkLogout, String.class);
-		this.userId = SessionUtil.getAttribute(request, "userId").toString();
-		rest.postForObject(config.getSsoUrl() + "/doLogout", SessionUtil.getAttribute(request, "userId"), String.class);
+//		this.userId = SessionUtil.getAttribute(request, "userId").toString();
+//		rest.postForObject(config.getSsoUrl() + "/doLogout", SessionUtil.getAttribute(request, "userId"), String.class);
 		ResponseMessage resMessage = new ResponseMessage();
 		resMessage.setStatus(1);
 		resMessage.setResults(config.getCallbackUrl());
@@ -209,14 +209,14 @@ public class ArticleViewController {
 	}
 	// handle API
 	
-	@RequestMapping(value = "/doLogout", method = RequestMethod.POST)
-	public ResponseEntity<String> doLogout( @RequestBody String userId){
-		System.out.println("go here");
-		if(userId.equals(this.userId)) {
-			this.setSessionNull = true;
-		}
-		return new ResponseEntity<String>(HttpStatus.OK);
-	}
+//	@RequestMapping(value = "/doLogout", method = RequestMethod.POST)
+//	public ResponseEntity<String> doLogout( @RequestBody String userId){
+//		System.out.println("go here");
+//		if(userId.equals(this.userId)) {
+//			this.setSessionNull = true;
+//		}
+//		return new ResponseEntity<String>(HttpStatus.OK);
+//	}
 
 	@PostMapping(value = "/newspapers", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseMessage> createArticle(@RequestBody Article article) {
