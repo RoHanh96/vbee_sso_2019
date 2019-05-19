@@ -44,21 +44,25 @@ public class UserController {
 	
 	@RequestMapping(value = "/edit-user-{userId}", method = RequestMethod.GET)
 	public String editUser(@PathVariable String userId, ModelMap model, HttpServletRequest request) {
-		try {
-			if(!(LoginController.getUserRole(request).equals(roleAdmin))) {
+		String role = LoginController.getUserRole(request);
+		if(role != null) {
+			try {
+				if(!(role.equals(roleAdmin))) {
+					return "access_denied";
+				}
+			} catch (Exception e) {
 				return "access_denied";
 			}
-		} catch (Exception e) {
-			return "access_denied";
+			
+			User user = new User();
+			if(!model.containsAttribute("userInfo")) {
+				user = userService.getUserById(Integer.valueOf(userId));
+				model.addAttribute("userInfo", user);
+			}
+			model.addAttribute("roles", roleService.getAllRole());
+			return "edit";
 		}
-		
-		User user = new User();
-		if(!model.containsAttribute("userInfo")) {
-			user = userService.getUserById(Integer.valueOf(userId));
-			model.addAttribute("userInfo", user);
-		}
-		model.addAttribute("roles", roleService.getAllRole());
-		return "edit";
+		return "access_denied";
 	}
 	
 	@RequestMapping(value = "/edit-user-{userId}", method = RequestMethod.POST)
@@ -75,17 +79,20 @@ public class UserController {
 	
 	@RequestMapping(value = "/delete-user-{userId}", method = RequestMethod.GET)
 	public String deleteUser(@PathVariable String userId, HttpServletRequest request) {
-		try {
-			if(!(LoginController.getUserRole(request).equals(roleAdmin))) {
+		String role = LoginController.getUserRole(request);
+		if(role != null) {
+			try {
+				if(!(LoginController.getUserRole(request).equals(roleAdmin))) {
+					return "access_denied";
+				}
+			} catch (Exception e) {
 				return "access_denied";
 			}
-		} catch (Exception e) {
-			return "access_denied";
+			User user = userService.getUserById(Integer.valueOf(userId));
+			userService.deleteById(user);
+			return "redirect:/list_user";
 		}
-		User user = userService.getUserById(Integer.valueOf(userId));
-		userService.deleteById(user);
-		return "redirect:/list_user";
-		
+		return "access_denied";
 	}
 	
 	@RequestMapping(value = "/logout")
@@ -97,11 +104,22 @@ public class UserController {
 	
 	@RequestMapping(value = "/newuser", method=RequestMethod.GET)
 	public String createUser(Model model, HttpServletRequest request) {
-		model.addAttribute("roles", roleService.getAllRole());
-		if(!model.containsAttribute("userRegistrationAdmin")) {
-			model.addAttribute("userRegistrationAdmin", new User());
+		String role = LoginController.getUserRole(request);
+		if(role != null) {
+			try {
+				if(!(LoginController.getUserRole(request).equals(roleAdmin))) {
+					return "access_denied";
+				}
+			} catch (Exception e) {
+				return "access_denied";
+			}
+			model.addAttribute("roles", roleService.getAllRole());
+			if(!model.containsAttribute("userRegistrationAdmin")) {
+				model.addAttribute("userRegistrationAdmin", new User());
+			}
+			return "registration_admin";
 		}
-		return "registration_admin";
+		return "access_denied";
 	}
 	
 	@RequestMapping(value = "/newuser", method=RequestMethod.POST)

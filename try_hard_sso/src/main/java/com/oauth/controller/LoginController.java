@@ -80,28 +80,32 @@ public class LoginController {
 	@RequestMapping(value = "/list_user", method = RequestMethod.GET)
 	public String listUser(Model model, HttpServletRequest request) {
 //		System.out.println("COOKIE " + CookieUtil.getValue(request, jwtTokenCookieName));
-		if(!(LoginController.getUserRole(request).equals(roleAdmin))) {
-			return "access_denied";
+		String role = LoginController.getUserRole(request);
+		if(role != null) {
+			if(!(role.equals(roleAdmin))) {
+				return "access_denied";
+			}
+			List<User> users = userService.getAllUser();
+			String userData = JwtUtil.getSubject(request, jwtTokenCookieName, signingKey);
+			User userLogined = null;
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				userLogined = mapper.readValue(userData, User.class);
+			} catch (JsonParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			model.addAttribute("userLogined", userLogined);
+			model.addAttribute("listUser", users);
+			return "list_user";
 		}
-		List<User> users = userService.getAllUser();
-		String userData = JwtUtil.getSubject(request, jwtTokenCookieName, signingKey);
-		User userLogined = null;
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			userLogined = mapper.readValue(userData, User.class);
-		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		model.addAttribute("userLogined", userLogined);
-		model.addAttribute("listUser", users);
-		return "list_user";
+		else return "access_denied";
 	}
 	
 	@RequestMapping(value = "/login")
@@ -123,7 +127,6 @@ public class LoginController {
 				// TODO: handle exception
 			}
 		}
-		System.out.println("COOKIE AFTER " + CookieUtil.getValue(request, jwtTokenCookieName));
 		if(CookieUtil.getValue(request, jwtTokenCookieName) != null && SessionUtil.getAttribute(request, jwtTokenSessionName).toString().equals(CookieUtil.getValue(request, jwtTokenCookieName))) {
 			this.jwtTokenStore = CookieUtil.getValue(request, jwtTokenCookieName);
 			System.out.println("token store: " + this.jwtTokenStore);
@@ -133,14 +136,12 @@ public class LoginController {
 				System.out.println(e.toString());
 			}
 			randomToken = StringUtil.randomAlphaNumeric(10);
-//			this.addDomainUrl(redirectUrl);
 			if(LoginController.getUserRole(request).equals(roleAdmin)) {
 				return "redirect:/list_user";
 			}
 			return "redirect:" + redirectUrl + "?token=" + randomToken;
 		}
 		model.addAttribute("userFormLogin", new User());
-		System.out.println("cookie at 8081" + CookieUtil.getValue(request, jwtTokenCookieName));
 		return "login";
 	}
 	
@@ -173,7 +174,6 @@ public class LoginController {
 		}
 		CookieUtil.create(httpServletResponse, jwtTokenCookieName, token, false, -1, domainServer);
 		SessionUtil.setAtribute(request, jwtTokenSessionName, token);
-//		this.checkLogout = false;
 		httpServletResponse.setStatus(HttpServletResponse.SC_OK);
 		if(userLogin.getRole().getName().equals("ROLE_ADMIN")) {
 			return "redirect:" + "/list_user";
@@ -199,11 +199,7 @@ public class LoginController {
 	@RequestMapping(value = "/getJwtToken", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<String> testGetJwtToken(@RequestParam(value= "token") String token) {
-		System.out.println("test node call api");
 		try {
-			System.out.println("token" + token);
-			System.out.println("random token" + this.randomToken);
-			System.out.println("token store" + this.jwtTokenStore);
 			if(this.randomToken.equals(token) && this.jwtTokenStore.equals(this.jwtTokenStoreSession)) {
 				this.randomToken = null;
 				return new ResponseEntity<String>(this.jwtTokenStore, HttpStatus.OK);
@@ -289,8 +285,12 @@ public class LoginController {
 	
 	//Ham authorization
 	public  static String getUserRole(HttpServletRequest request) {
-		String userData = JwtUtil.getSubject(request, jwtTokenCookieName, signingKey);
-		System.out.println("bsajash" + userData);
+		String userData = null;
+		try {
+			userData = JwtUtil.getSubject(request, jwtTokenCookieName, signingKey);
+		} catch (Exception e) {
+			return null;
+		}
 		if(userData == null) return null;
 		ObjectMapper mapper = new ObjectMapper();
 		User user = null;
