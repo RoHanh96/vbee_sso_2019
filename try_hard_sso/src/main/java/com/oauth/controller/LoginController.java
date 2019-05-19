@@ -141,9 +141,9 @@ public class LoginController {
 		if(user.getUsername() == null || user.getPassword() == null || userLogin == null || !userLogin.getPassword().equals(user.getPassword())) {
 			model.addAttribute("error","Invalid username or password");
 			if(callbackUrl != null) {
-				return "redirect:" + "http://localhost:8081/login" + "?callbackUrl=" + callbackUrl;
+				return "redirect:" + "/login" + "?callbackUrl=" + callbackUrl;
 			}
-			else return "redirect:" + "http://localhost:8081/login";
+			else return "redirect:" + "/login";
 		}
 		ObjectMapper mapper = new ObjectMapper();
 		String userData = new String();
@@ -167,9 +167,9 @@ public class LoginController {
 //		this.checkLogout = false;
 		httpServletResponse.setStatus(HttpServletResponse.SC_OK);
 		if(userLogin.getRole().getName().equals("ROLE_ADMIN")) {
-			return "redirect:" + "http://localhost:8081/list_user";
+			return "redirect:" + "/list_user";
 		}
-		else return "redirect:" + "http://localhost:8081/login" + "?callbackUrl=" + callbackUrl;
+		else return "redirect:" + "/login" + "?callbackUrl=" + callbackUrl;
 	}
 	
 	@RequestMapping(value = "/getJwtToken/{token}", method = RequestMethod.GET)
