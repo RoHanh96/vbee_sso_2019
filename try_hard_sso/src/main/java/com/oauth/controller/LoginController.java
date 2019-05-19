@@ -55,7 +55,7 @@ public class LoginController {
 	private static final String jwtTokenCookieName = "JWT-TOKEN";
 	private static final String jwtTokenSessionName = "JWT-TOKEN-SESSION";
 	private static final String signingKey = "signingKey";
-	private static final String domainServer = "localhost";
+	private static final String domainServer = "springsso.herokuapp.com";
 	private static final String roleAdmin = "ROLE_ADMIN";
 	
 	@Autowired
@@ -78,6 +78,7 @@ public class LoginController {
 	
 	@RequestMapping(value = "/list_user", method = RequestMethod.GET)
 	public String listUser(Model model, HttpServletRequest request) {
+		System.out.println("COOKIE " + CookieUtil.getValue(request, jwtTokenCookieName));
 		if(!(LoginController.getUserRole(request).equals(roleAdmin))) {
 			return "access_denied";
 		}
@@ -141,9 +142,9 @@ public class LoginController {
 		if(user.getUsername() == null || user.getPassword() == null || userLogin == null || !userLogin.getPassword().equals(user.getPassword())) {
 			model.addAttribute("error","Invalid username or password");
 			if(callbackUrl != null) {
-				return "redirect:" + "http://localhost:8081/login" + "?callbackUrl=" + callbackUrl;
+				return "redirect:" + "/login" + "?callbackUrl=" + callbackUrl;
 			}
-			else return "redirect:" + "http://localhost:8081/login";
+			else return "redirect:" + "/login";
 		}
 		ObjectMapper mapper = new ObjectMapper();
 		String userData = new String();
@@ -154,7 +155,7 @@ public class LoginController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("userData " + userData);
+//		System.out.println("userData " + userData);
 		String token = null;
 		try {
 			token = JwtUtil.generateToken(signingKey, userData);
@@ -167,9 +168,9 @@ public class LoginController {
 //		this.checkLogout = false;
 		httpServletResponse.setStatus(HttpServletResponse.SC_OK);
 		if(userLogin.getRole().getName().equals("ROLE_ADMIN")) {
-			return "redirect:" + "http://localhost:8081/list_user";
+			return "redirect:" + "/list_user";
 		}
-		else return "redirect:" + "http://localhost:8081/login" + "?callbackUrl=" + callbackUrl;
+		else return "redirect:" + "/login" + "?callbackUrl=" + callbackUrl;
 	}
 	
 	@RequestMapping(value = "/getJwtToken/{token}", method = RequestMethod.GET)
@@ -281,6 +282,7 @@ public class LoginController {
 	//Ham authorization
 	public  static String getUserRole(HttpServletRequest request) {
 		String userData = JwtUtil.getSubject(request, jwtTokenCookieName, signingKey);
+		System.out.println("bsajash" + userData);
 		if(userData == null) return null;
 		ObjectMapper mapper = new ObjectMapper();
 		User user = null;
