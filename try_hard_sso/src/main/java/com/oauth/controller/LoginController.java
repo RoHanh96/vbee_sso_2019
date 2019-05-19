@@ -57,6 +57,7 @@ public class LoginController {
 	private static final String signingKey = "signingKey";
 	private static final String domainServer = "springsso.herokuapp.com";
 	private static final String roleAdmin = "ROLE_ADMIN";
+	private static final String logoutCookie = "check_logout";
 	
 	@Autowired
 	private UserServiceImpl userService;
@@ -78,7 +79,7 @@ public class LoginController {
 	
 	@RequestMapping(value = "/list_user", method = RequestMethod.GET)
 	public String listUser(Model model, HttpServletRequest request) {
-		System.out.println("COOKIE " + CookieUtil.getValue(request, jwtTokenCookieName));
+//		System.out.println("COOKIE " + CookieUtil.getValue(request, jwtTokenCookieName));
 		if(!(LoginController.getUserRole(request).equals(roleAdmin))) {
 			return "access_denied";
 		}
@@ -108,14 +109,21 @@ public class LoginController {
 		if(this.checkLogout == true) {
 			try {
 				Cookie cookie = WebUtils.getCookie(request, jwtTokenCookieName);
+				System.out.println("COOKIE " + cookie.getValue());
 				cookie.setValue(null);
+				cookie.setPath("/");
+				cookie.setHttpOnly(true);
+				cookie.setMaxAge(0);
+				cookie.setDomain(domainServer);
 				response.addCookie(cookie);
+//				CookieUtil.clear(response, jwtTokenCookieName);
 				System.out.println("da xoa cookie");
 				this.checkLogout = false;
 			} catch (Exception e) {
 				// TODO: handle exception
 			}
 		}
+		System.out.println("COOKIE AFTER " + CookieUtil.getValue(request, jwtTokenCookieName));
 		if(CookieUtil.getValue(request, jwtTokenCookieName) != null && SessionUtil.getAttribute(request, jwtTokenSessionName).toString().equals(CookieUtil.getValue(request, jwtTokenCookieName))) {
 			this.jwtTokenStore = CookieUtil.getValue(request, jwtTokenCookieName);
 			System.out.println("token store: " + this.jwtTokenStore);

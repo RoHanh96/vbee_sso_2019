@@ -1,5 +1,6 @@
 package com.oauth.controller;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.WebUtils;
 
 import com.oauth.entity.User;
 import com.oauth.services.RoleServiceImpl;
@@ -26,6 +28,7 @@ import com.oauth.util.UserValidatorEdit;
 public class UserController {
 	private static final String roleAdmin = "ROLE_ADMIN";
 	private static final String jwtTokenCookieName = "JWT-TOKEN";
+	private static final String domainServer = "springsso.herokuapp.com";
 	
 	@Autowired
 	UserServiceImpl userService;
@@ -87,7 +90,8 @@ public class UserController {
 	
 	@RequestMapping(value = "/logout")
 	public String logOut(HttpServletRequest request, HttpServletResponse response) {
-		CookieUtil.clear(response, jwtTokenCookieName);
+//		CookieUtil.clear(response, jwtTokenCookieName);
+		CookieUtil.clear(response, jwtTokenCookieName, domainServer);
 		return "redirect:/login";
 	}
 	
