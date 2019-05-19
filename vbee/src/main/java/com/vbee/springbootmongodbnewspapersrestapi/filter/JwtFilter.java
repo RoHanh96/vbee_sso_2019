@@ -53,7 +53,7 @@ public class JwtFilter extends OncePerRequestFilter {
 					System.out.println(e.toString());
 				}
 				if(token != null) {
-					UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(config.getSsoUrl()+"getJwtToken").queryParam("token",  token);
+					UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(config.getSsoUrl()+"/getJwtToken").queryParam("token",  token);
 					getJwtTokenFromServer = rest1.getForObject(uriBuilder.toUriString(), String.class);
 				}
 				if(getJwtTokenFromServer != null ) {
