@@ -85,7 +85,7 @@ public class JwtFilter extends OncePerRequestFilter {
 		}
 		else {
 			if(CookieUtil.getValue(request, jwtTokenSessionName).equals(SessionUtil.getAttribute(request, jwtTokenSessionName))) {
-				System.out.println("Lan dang nhap thu 2. Khong request len server. Dang nhap thanh cong");
+//				System.out.println("Lan dang nhap thu 2. Khong request len server. Dang nhap thanh cong");
 				filterChain.doFilter(request, response);
 			}
 			//Khi client A logout thi cookie trong client B van con

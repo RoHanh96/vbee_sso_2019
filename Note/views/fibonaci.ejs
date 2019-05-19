@@ -1,0 +1,14 @@
+<include top %>
+	<% if (typeof fiboval !== "undefined") { %>
+		<p>Fibonaci's index = <%= fibonum %><p>
+		<p>Value: <%= fiboval %><p>
+	<% } else { %>
+		
+	<% } %>
+	<p>Enter finbonaci's index: <p>
+	<form name='fibonacci' action='/fibonaci' method='get'>
+	    <input type='text' name='fibonum' />
+	    <input type='submit' value='Submit' />
+	</form>
+<% include bottom %>
+	

@@ -1,0 +1,1 @@
+exports.ssoUrl = "https://springsso.herokuapp.com";
