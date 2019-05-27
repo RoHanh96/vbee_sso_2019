@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -56,6 +57,7 @@ public class LoginController {
 	private static final String jwtTokenSessionName = "JWT-TOKEN-SESSION";
 	private static final String signingKey = "signingKey";
 	private static final String domainServer = "springsso.herokuapp.com";
+//	private static final String domainServer = "localhost";
 	private static final String roleAdmin = "ROLE_ADMIN";
 	private static final String logoutCookie = "check_logout";
 	
@@ -72,11 +74,22 @@ public class LoginController {
 		
 	}
 	
+	/**
+	 * Function home()
+	 * @return "/login"
+	 */
 	@RequestMapping("/")
 	public String home() {
 		return "redirect:/login";
 	}
 	
+	/**
+	 * Function listUser
+	 * @param model
+	 * @param request
+	 * @return list_user form if user's role is admin
+	 * @return access_denied if user's role is not admin
+	 */
 	@RequestMapping(value = "/list_user", method = RequestMethod.GET)
 	public String listUser(Model model, HttpServletRequest request) {
 //		System.out.println("COOKIE " + CookieUtil.getValue(request, jwtTokenCookieName));
@@ -108,6 +121,16 @@ public class LoginController {
 		else return "access_denied";
 	}
 	
+	/**
+	 * 
+	 * @param model
+	 * @param request
+	 * @param redirectUrl
+	 * @param response
+	 * @return login form if cookie is not validate
+	 * @return list_user if user's role is admin
+	 * @return client form if user's role is user
+	 */
 	@RequestMapping(value = "/login")
 	public String login(Model model, HttpServletRequest request, @RequestParam(value = "callbackUrl", required = false) String redirectUrl, HttpServletResponse response) {
 		if(this.checkLogout == true) {
@@ -145,11 +168,21 @@ public class LoginController {
 		return "login";
 	}
 	
+	/**
+	 * handling user's info that user inputs
+	 * @param httpServletResponse
+	 * @param user
+	 * @param request
+	 * @param model
+	 * @param callbackUrl
+	 * @return "/login"
+	 * @return list_user form if user's role is admin
+	 */
 	@RequestMapping(value = "login", method = RequestMethod.POST)
 	public String login(HttpServletResponse httpServletResponse, @ModelAttribute("userFormLogin") User user, HttpServletRequest request, Model model, @RequestParam(value = "callbackUrl", required = false) String callbackUrl) {
 		User userLogin = userService.getUserByName(user.getUsername());
-		if(user.getUsername() == null || user.getPassword() == null || userLogin == null || !userLogin.getPassword().equals(user.getPassword())) {
-			model.addAttribute("error","Invalid username or password");
+		if(user.getUsername() == null || user.getPassword() == null || userLogin == null || !checkPassword(user.getPassword(), userLogin.getPassword())) {
+			model.addAttribute("error","Tên đăng nhập hoặc mật khẩu không đúng");
 			if(callbackUrl != null) {
 				return "redirect:" + "/login" + "?callbackUrl=" + callbackUrl;
 			}
@@ -181,6 +214,21 @@ public class LoginController {
 		else return "redirect:" + "/login" + "?callbackUrl=" + callbackUrl;
 	}
 	
+	/**
+	 * check password
+	 * @param password
+	 * @param passwordInDB
+	 * @return true or false
+	 */
+	private boolean checkPassword(String password, String passwordInDB) {
+		return BCrypt.checkpw(password, passwordInDB);
+	}
+	
+	/**
+	 * API to get jwtToken
+	 * @param token
+	 * @return jwtToken
+	 */
 	@RequestMapping(value = "/getJwtToken/{token}", method = RequestMethod.GET)
 	@ResponseBody
 	public String getJwtToken(@PathVariable("token") String token) {
@@ -196,6 +244,11 @@ public class LoginController {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param token
+	 * @return
+	 */
 	@RequestMapping(value = "/getJwtToken", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<String> testGetJwtToken(@RequestParam(value= "token") String token) {
@@ -211,7 +264,11 @@ public class LoginController {
 		return null;
 	}
 	
-	
+	/**
+	 * set jwtToken
+	 * @param tokenRefresh
+	 * @return status
+	 */
 	@RequestMapping(value = "/setJwtToken", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<String> setJwtToken(@RequestBody String tokenRefresh) {
@@ -221,7 +278,11 @@ public class LoginController {
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 	
-		
+	/**
+	 * api clear cookie by set checkLogout status
+	 * @param checkLogout
+	 * @return status
+	 */
 	@RequestMapping(value = "/clearCookie", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<String> clearCookieFromLogout(@RequestBody boolean checkLogout) {
@@ -230,6 +291,11 @@ public class LoginController {
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 	
+	/**
+	 * api clear cookie in nodejs 
+	 * @param checkLogout
+	 * @return status
+	 */
 	@RequestMapping(value="clearCookieJs", method= RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<String> clearCookieNodeJS(@RequestBody String checkLogout){
@@ -238,6 +304,10 @@ public class LoginController {
 		}
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
+	/**
+	 * 
+	 * @return
+	 */
 	@RequestMapping(value = "/getCheckLogoutStatus", method = RequestMethod.GET)
 	@ResponseBody
 	public String getCheckLogoutStatus() {
@@ -259,7 +329,12 @@ public class LoginController {
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 	
-	
+	/**
+	 * get domainUrl
+	 * @param url
+	 * @return domain
+	 * @throws MalformedURLException
+	 */
 	private String getDomainUrl(String url) throws MalformedURLException {
 		URL uri;
 		String domain = null;
@@ -268,7 +343,10 @@ public class LoginController {
 		return domain.startsWith("www.") ? domain.substring(4) : domain;
 	}
 	
-	//Ham xu li domain URL
+	/**
+	 * add domain
+	 * @param url
+	 */
 	private void addDomainUrl(String url) {
 		String domain = null;
 		try {
@@ -283,7 +361,11 @@ public class LoginController {
 		}		
 	}
 	
-	//Ham authorization
+	/**
+	 * Ham authorization
+	 * @param request
+	 * @return userRole
+	 */
 	public  static String getUserRole(HttpServletRequest request) {
 		String userData = null;
 		try {
