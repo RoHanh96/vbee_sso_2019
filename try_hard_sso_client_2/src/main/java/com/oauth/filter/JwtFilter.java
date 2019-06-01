@@ -31,6 +31,7 @@ public class JwtFilter extends OncePerRequestFilter {
 	private static final String tokenApi1 = "http://localhost:8081/getJwtToken";
 	private static final String tokenRefreshApi = "http://localhost:8081/setJwtToken";
 	private static final String getCheckLogoutStatus = "http://localhost:8081/getCheckLogoutStatus";
+	private static final String getUserInfo = "http://localhost:8081/getUserInfo";
 	private static final String signingKey = "signingKey";
 	
 	@Override
@@ -59,7 +60,10 @@ public class JwtFilter extends OncePerRequestFilter {
 					rest1.postForObject(tokenRefreshApi, tokenRefresh, String.class);
 					CookieUtil.create(response, jwtTokenSessionName, encodeJwtToken(getJwtTokenFromServer), false, -1, domainClient);
 					SessionUtil.setAtribute(request, jwtTokenSessionName, encodeJwtToken(getJwtTokenFromServer));
-					String userJson = Jwts.parser().setSigningKey(signingKey.getBytes()).parseClaimsJws(getJwtTokenFromServer).getBody().getSubject();
+					//String userJson = Jwts.parser().setSigningKey(signingKey.getBytes()).parseClaimsJws(getJwtTokenFromServer).getBody().getSubject();
+					UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(getUserInfo).queryParam("jwtToken",  getJwtTokenFromServer);
+					String userJson = rest1.getForObject(uriBuilder.toUriString(), String.class);
+					System.out.println("userJosn" + userJson);
 					ObjectMapper mapper = new ObjectMapper();
 					User user = mapper.readValue(userJson, User.class);
 					SessionUtil.setAtribute(request, "userId", user.getId());
