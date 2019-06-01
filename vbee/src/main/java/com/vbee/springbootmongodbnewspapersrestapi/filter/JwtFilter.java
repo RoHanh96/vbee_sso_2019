@@ -61,7 +61,8 @@ public class JwtFilter extends OncePerRequestFilter {
 					rest1.postForObject(config.getSsoUrl()+"/setJwtToken", tokenRefresh, String.class);
 					CookieUtil.create(response, jwtTokenSessionName, encodeJwtToken(getJwtTokenFromServer), false, -1, domainClient);
 					SessionUtil.setAtribute(request, jwtTokenSessionName, encodeJwtToken(getJwtTokenFromServer));
-					String userJson = Jwts.parser().setSigningKey(signingKey.getBytes()).parseClaimsJws(getJwtTokenFromServer).getBody().getSubject();
+					UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(config.getSsoUrl()+"/getUserInfo").queryParam("jwtToken",  getJwtTokenFromServer);
+					String userJson = rest1.getForObject(uriBuilder.toUriString(), String.class);
 					ObjectMapper mapper = new ObjectMapper();
 					User user = mapper.readValue(userJson, User.class);
 					SessionUtil.setAtribute(request, "userId", user.getId());

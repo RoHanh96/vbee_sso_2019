@@ -50,6 +50,8 @@ import com.oauth.util.RefererUtil;
 import com.oauth.util.SessionUtil;
 import com.oauth.util.StringUtil;
 
+import io.jsonwebtoken.Jwts;
+
 @Controller
 public class LoginController {
 	
@@ -225,7 +227,7 @@ public class LoginController {
 	}
 	
 	/**
-	 * API to get jwtToken
+	 * API to get jwtToken (function to test)
 	 * @param token
 	 * @return jwtToken
 	 */
@@ -245,9 +247,9 @@ public class LoginController {
 	}
 	
 	/**
-	 * 
+	 * Get jwt Token
 	 * @param token
-	 * @return
+	 * @return jwtToken
 	 */
 	@RequestMapping(value = "/getJwtToken", method = RequestMethod.GET)
 	@ResponseBody
@@ -390,6 +392,27 @@ public class LoginController {
 		}
 		if(user!=null) {
 			return user.getRole().getName();
+		}
+		return null;
+	}
+	
+	/**
+	 * Get user's Info from jwtToken
+	 * @param jwtToken
+	 * @return user's Info Json
+	 */
+	@RequestMapping(value = "/getUserInfo", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<String> getUserInfo(@RequestParam(value= "jwtToken") String jwtToken) {
+		if(jwtToken != null) {
+			try {
+				String userJson = Jwts.parser().setSigningKey(signingKey.getBytes()).parseClaimsJws(jwtToken).getBody().getSubject();
+				return new ResponseEntity<String>(userJson, HttpStatus.OK);
+			} catch (Exception e) {
+				// TODO: handle exception
+				return null;
+			}
+			
 		}
 		return null;
 	}

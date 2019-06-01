@@ -100,6 +100,7 @@
           </a>
         </li>
       </ul>
+      <font color="white">Xin chào <%= session.getAttribute("userName") %></font>
       <ul class="navbar-nav ml-auto">
         <li class="nav-item">
           <a class="nav-link" data-toggle="modal" data-target="#exampleModal">

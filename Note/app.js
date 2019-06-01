@@ -6,6 +6,7 @@ var logger = require('morgan');
 var session = require('express-session');
 var axios = require('axios');
 var jwt = require('jsonwebtoken');
+const JSON1 = require('circular-json');
 const con = require('./constant');
 const targetBaseUrl = con.ssoUrl + "/login";
 
@@ -107,11 +108,18 @@ async function handleRedirect(req, res, next){
       await axios(options);
       res.cookie('access-token', jwtToken);
       req.session.access_token = jwtToken;
-      const decode = jwt.verify(jwtToken, "signingKey");
-      const user = JSON.parse(decode.sub);
-      console.log(user.username);
-      req.session.username = user.username;
-      res.locals.username = user.username;
+      const options1 = {
+        method: 'get',
+        url: con.ssoUrl + "/getUserInfo",
+        params: {jwtToken}
+      };
+      const userInfoJson = await axios(options1);
+      console.log("userJson" + JSON1.stringify(userInfoJson.data));
+      //const decode = jwt.verify(jwtToken, "signingKey");
+      // const user = JSON.parse(userInfoJson.data);
+      // console.log(user.username);
+      req.session.username = userInfoJson.data.username;
+      res.locals.username = userInfoJson.data.username;
       console.log("dang nhap thanh cong");
       next();
     }
