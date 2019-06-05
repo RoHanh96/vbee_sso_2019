@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,26 +27,12 @@ public class RegistraionCotroller {
 	@Autowired
 	private UserValidator userValidator;
 	
-	/**
-	 * get registration form
-	 * @param model
-	 * @param redirectUrl
-	 * @return registration form
-	 */
 	@GetMapping("/registration")
 	public String registration(Model model, @RequestParam(value = "callbackUrl") String redirectUrl) {
 		model.addAttribute("userForm", new User());
 		return "registration";
 	}
 	
-	/**
-	 * post registration form
-	 * @param userForm
-	 * @param bindingResult
-	 * @param redirectUrl
-	 * @return registration form if not success
-	 * @return login form if success
-	 */
 	@PostMapping("/registration")
 	public String registration(@ModelAttribute("userForm") @Valid User userForm, BindingResult bindingResult,  @RequestParam(value = "callbackUrl") String redirectUrl) {
 		userValidator.validate(userForm, bindingResult);
@@ -55,7 +40,6 @@ public class RegistraionCotroller {
 			return "registration";
 		}
 		userService.beforeSave();
-		userForm.setPassword(BCrypt.hashpw(userForm.getPassword(), BCrypt.gensalt(7)));
 		userService.save(userForm);
 		return "redirect:/login" + "?callbackUrl=" + redirectUrl;
 	}

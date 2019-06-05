@@ -58,7 +58,7 @@ public class JwtFilter extends OncePerRequestFilter {
 				if(getJwtTokenFromServer != null) {
 					String tokenRefresh = getJwtTokenFromServer;
 					rest1.postForObject(tokenRefreshApi, tokenRefresh, String.class);
-					CookieUtil.create(response, jwtTokenSessionName, encodeJwtToken(getJwtTokenFromServer), false, -1, domainClient);
+					CookieUtil.create(response, jwtTokenSessionName, encodeJwtToken(getJwtTokenFromServer), false, 1*30*1000, domainClient);
 					SessionUtil.setAtribute(request, jwtTokenSessionName, encodeJwtToken(getJwtTokenFromServer));
 					//String userJson = Jwts.parser().setSigningKey(signingKey.getBytes()).parseClaimsJws(getJwtTokenFromServer).getBody().getSubject();
 					UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(getUserInfo).queryParam("jwtToken",  getJwtTokenFromServer);
@@ -92,7 +92,11 @@ public class JwtFilter extends OncePerRequestFilter {
 			}
 			//Khi client A logout thi cookie trong client B van con
 			else {
-				
+				CookieUtil.clear(response, jwtTokenSessionName, domainClient);
+//				String authService = this.getFilterConfig().getInitParameter("services.auth");
+//				String redirectUrl = request.getRequestURL().toString();
+//				System.out.println("Lan dang nhap dau tien ");
+//				response.sendRedirect(authService + "?callbackUrl=" + redirectUrl);
 			}
 			
 		}

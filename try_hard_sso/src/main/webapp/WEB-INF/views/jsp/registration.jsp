@@ -5,7 +5,7 @@
 <c:set var="contextPath" value="${pageContext.request.contextPath}"/>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 	<link href="/resources/css/bootstrap.min.css" rel="stylesheet">
     <link href="/resources/css/common.css" rel="stylesheet">
 	<title>Register an User</title>
@@ -17,14 +17,14 @@
                 <div class="form-group ${status.error ? 'has-error' : ''}">
                     <form:input type="text" path="username" class="form-control" placeholder="Tên người dùng"
                                 autofocus="true"></form:input>
-                    <form:errors path="username" class='has-error'></form:errors>
+                    <form:errors path="username"></form:errors>
                 </div>
             </spring:bind>
 
             <spring:bind path="password">
                 <div class="form-group ${status.error ? 'has-error' : ''}">
                     <form:input type="password" path="password" class="form-control" placeholder="Mật khẩu"></form:input>
-                    <form:errors path="password" class='has-error'></form:errors>
+                    <form:errors path="password"></form:errors>
                 </div>
             </spring:bind>
 
@@ -32,7 +32,7 @@
                 <div class="form-group ${status.error ? 'has-error' : ''}">
                     <form:input type="text" path="email" class="form-control"
                                 placeholder="Email"></form:input>
-                    <form:errors path="email" class='has-error'></form:errors>
+                    <form:errors path="email"></form:errors>
                 </div>
             </spring:bind>
             <input name="callbackUrl" type= "hidden" id="callbackUrl">

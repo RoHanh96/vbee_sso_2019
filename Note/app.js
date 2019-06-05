@@ -6,8 +6,10 @@ var logger = require('morgan');
 var session = require('express-session');
 var axios = require('axios');
 var jwt = require('jsonwebtoken');
+var encrypt = require('sha256');
 const JSON1 = require('circular-json');
 const con = require('./constant');
+
 const targetBaseUrl = con.ssoUrl + "/login";
 
 
@@ -106,8 +108,8 @@ async function handleRedirect(req, res, next){
         }
       };
       await axios(options);
-      res.cookie('access-token', jwtToken);
-      req.session.access_token = jwtToken;
+      res.cookie('access-token', encrypt(jwtToken));
+      req.session.access_token = encrypt(jwtToken);
       const options1 = {
         method: 'get',
         url: con.ssoUrl + "/getUserInfo",
