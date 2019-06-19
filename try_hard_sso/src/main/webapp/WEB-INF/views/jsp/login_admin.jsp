@@ -7,7 +7,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 	<link href="/resources/css/bootstrap.min.css" rel="stylesheet">
     <link href="/resources/css/common.css" rel="stylesheet">
-	<title>Authentication Service</title>
+	<title>BK-SSO</title>
 </head>
 <body>
 <form method="POST" action="/login" modelAttribute="userFormLogin" class="form-signin">
@@ -19,21 +19,11 @@
     <h4 class="has-error" id="error"></h4>
     <br/>
     <button class="btn btn-lg btn-primary btn-block" type="submit">Đăng nhập</button>
-   <h4 class="text-center"><a id="registration" >Tạo tài khoản</a></h4>
+   
 </form>
 </body>
 <script>
-	var url_string = window.location.href; //window.location.href
-	var url = new URL(url_string);
-	var c = url.searchParams.get("callbackUrl");
-	console.log(c);
-	if(c!=null){
-		localStorage.setItem("callbackUrl", c);
-	}
 	var error = url.searchParams.get("error");
-	console.log(localStorage.getItem("callbackUrl"));
-	document.getElementById("callbackUrl").value = localStorage.getItem("callbackUrl");
 	document.getElementById("error").innerHTML = error;
-	document.getElementById("registration").href = "/registration?callbackUrl="+c;
 </script>
 </html>

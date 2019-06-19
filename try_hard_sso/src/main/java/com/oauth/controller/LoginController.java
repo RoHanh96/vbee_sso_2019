@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -49,14 +50,18 @@ import com.oauth.util.RefererUtil;
 import com.oauth.util.SessionUtil;
 import com.oauth.util.StringUtil;
 
+import io.jsonwebtoken.Jwts;
+
 @Controller
 public class LoginController {
 	
 	private static final String jwtTokenCookieName = "JWT-TOKEN";
 	private static final String jwtTokenSessionName = "JWT-TOKEN-SESSION";
 	private static final String signingKey = "signingKey";
+//	private static final String domainServer = "springsso.herokuapp.com";
 	private static final String domainServer = "localhost";
 	private static final String roleAdmin = "ROLE_ADMIN";
+	private static final String logoutCookie = "check_logout";
 	
 	@Autowired
 	private UserServiceImpl userService;
@@ -71,79 +76,121 @@ public class LoginController {
 		
 	}
 	
+	/**
+	 * Function home()
+	 * @return "/login"
+	 */
 	@RequestMapping("/")
 	public String home() {
 		return "redirect:/login";
 	}
 	
+	/**
+	 * Function listUser
+	 * @param model
+	 * @param request
+	 * @return list_user form if user's role is admin
+	 * @return access_denied if user's role is not admin
+	 */
 	@RequestMapping(value = "/list_user", method = RequestMethod.GET)
 	public String listUser(Model model, HttpServletRequest request) {
-		if(!(LoginController.getUserRole(request).equals(roleAdmin))) {
-			return "access_denied";
+//		System.out.println("COOKIE " + CookieUtil.getValue(request, jwtTokenCookieName));
+		String role = LoginController.getUserRole(request);
+		if(role != null) {
+			if(!(role.equals(roleAdmin))) {
+				return "access_denied";
+			}
+			List<User> users = userService.getAllUser();
+			String userData = JwtUtil.getSubject(request, jwtTokenCookieName, signingKey);
+			User userLogined = null;
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				userLogined = mapper.readValue(userData, User.class);
+			} catch (JsonParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			model.addAttribute("userLogined", userLogined);
+			model.addAttribute("listUser", users);
+			return "list_user";
 		}
-		List<User> users = userService.getAllUser();
-		String userData = JwtUtil.getSubject(request, jwtTokenCookieName, signingKey);
-		User userLogined = null;
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			userLogined = mapper.readValue(userData, User.class);
-		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		model.addAttribute("userLogined", userLogined);
-		model.addAttribute("listUser", users);
-		return "list_user";
+		else return "access_denied";
 	}
 	
+	/**
+	 * 
+	 * @param model
+	 * @param request
+	 * @param redirectUrl
+	 * @param response
+	 * @return login form if cookie is not validate
+	 * @return list_user if user's role is admin
+	 * @return client form if user's role is user
+	 */
 	@RequestMapping(value = "/login")
 	public String login(Model model, HttpServletRequest request, @RequestParam(value = "callbackUrl", required = false) String redirectUrl, HttpServletResponse response) {
 		if(this.checkLogout == true) {
 			try {
 				Cookie cookie = WebUtils.getCookie(request, jwtTokenCookieName);
+				System.out.println("COOKIE " + cookie.getValue());
 				cookie.setValue(null);
+				cookie.setPath("/");
+				cookie.setHttpOnly(true);
+				cookie.setMaxAge(0);
+				cookie.setDomain(domainServer);
 				response.addCookie(cookie);
+//				CookieUtil.clear(response, jwtTokenCookieName);
 				System.out.println("da xoa cookie");
 				this.checkLogout = false;
 			} catch (Exception e) {
 				// TODO: handle exception
 			}
 		}
-		if(CookieUtil.getValue(request, jwtTokenCookieName) != null && SessionUtil.getAttribute(request, jwtTokenSessionName).toString().equals(CookieUtil.getValue(request, jwtTokenCookieName))) {
+		if(redirectUrl == null) {
+			return "login_admin";
+		}
+		if(CookieUtil.getValue(request, jwtTokenCookieName) != null && SessionUtil.getAttribute(request, jwtTokenSessionName)!= null && SessionUtil.getAttribute(request, jwtTokenSessionName).toString().equals(CookieUtil.getValue(request, jwtTokenCookieName))) {
 			this.jwtTokenStore = CookieUtil.getValue(request, jwtTokenCookieName);
-			System.out.println("token store: " + this.jwtTokenStore);
 			try {
 				this.jwtTokenStoreSession = SessionUtil.getAttribute(request, jwtTokenSessionName).toString();
 			} catch (Exception e) {
 				System.out.println(e.toString());
 			}
 			randomToken = StringUtil.randomAlphaNumeric(10);
-//			this.addDomainUrl(redirectUrl);
 			if(LoginController.getUserRole(request).equals(roleAdmin)) {
 				return "redirect:/list_user";
 			}
 			return "redirect:" + redirectUrl + "?token=" + randomToken;
 		}
 		model.addAttribute("userFormLogin", new User());
-		System.out.println("cookie at 8081" + CookieUtil.getValue(request, jwtTokenCookieName));
 		return "login";
 	}
 	
+	/**
+	 * handling user's info that user inputs
+	 * @param httpServletResponse
+	 * @param user
+	 * @param request
+	 * @param model
+	 * @param callbackUrl
+	 * @return "/login"
+	 * @return list_user form if user's role is admin
+	 */
 	@RequestMapping(value = "login", method = RequestMethod.POST)
 	public String login(HttpServletResponse httpServletResponse, @ModelAttribute("userFormLogin") User user, HttpServletRequest request, Model model, @RequestParam(value = "callbackUrl", required = false) String callbackUrl) {
 		User userLogin = userService.getUserByName(user.getUsername());
-		if(user.getUsername() == null || user.getPassword() == null || userLogin == null || !userLogin.getPassword().equals(user.getPassword())) {
-			model.addAttribute("error","Invalid username or password");
+		if(user.getUsername() == null || user.getPassword() == null || userLogin == null || !checkPassword(user.getPassword(), userLogin.getPassword())) {
+			model.addAttribute("error","Tên đăng nhập hoặc mật khẩu không đúng");
 			if(callbackUrl != null) {
-				return "redirect:" + "http://localhost:8081/login" + "?callbackUrl=" + callbackUrl;
+				return "redirect:" + "/login" + "?callbackUrl=" + callbackUrl;
 			}
-			else return "redirect:" + "http://localhost:8081/login";
+			else return "redirect:" + "/login";
 		}
 		ObjectMapper mapper = new ObjectMapper();
 		String userData = new String();
@@ -154,7 +201,7 @@ public class LoginController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("userData " + userData);
+//		System.out.println("userData " + userData);
 		String token = null;
 		try {
 			token = JwtUtil.generateToken(signingKey, userData);
@@ -164,14 +211,34 @@ public class LoginController {
 		}
 		CookieUtil.create(httpServletResponse, jwtTokenCookieName, token, false, -1, domainServer);
 		SessionUtil.setAtribute(request, jwtTokenSessionName, token);
-//		this.checkLogout = false;
 		httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+		this.checkLogout = false;
 		if(userLogin.getRole().getName().equals("ROLE_ADMIN")) {
-			return "redirect:" + "http://localhost:8081/list_user";
+			return "redirect:" + "/list_user";
 		}
-		else return "redirect:" + "http://localhost:8081/login" + "?callbackUrl=" + callbackUrl;
+		else return "redirect:" + "/login" + "?callbackUrl=" + callbackUrl;
 	}
 	
+//	@RequestMapping(value = "login_admin", method = RequestMethod.POST)
+//	public String loginAdminPrepare() {
+//		return "login_admin";
+//	}
+	
+	/**
+	 * check password
+	 * @param password
+	 * @param passwordInDB
+	 * @return true or false
+	 */
+	private boolean checkPassword(String password, String passwordInDB) {
+		return BCrypt.checkpw(password, passwordInDB);
+	}
+	
+	/**
+	 * API to get jwtToken (function to test)
+	 * @param token
+	 * @return jwtToken
+	 */
 	@RequestMapping(value = "/getJwtToken/{token}", method = RequestMethod.GET)
 	@ResponseBody
 	public String getJwtToken(@PathVariable("token") String token) {
@@ -187,14 +254,15 @@ public class LoginController {
 		return null;
 	}
 	
+	/**
+	 * Get jwt Token
+	 * @param token
+	 * @return jwtToken
+	 */
 	@RequestMapping(value = "/getJwtToken", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<String> testGetJwtToken(@RequestParam(value= "token") String token) {
-		System.out.println("test node call api");
 		try {
-			System.out.println("token" + token);
-			System.out.println("random token" + this.randomToken);
-			System.out.println("token store" + this.jwtTokenStore);
 			if(this.randomToken.equals(token) && this.jwtTokenStore.equals(this.jwtTokenStoreSession)) {
 				this.randomToken = null;
 				return new ResponseEntity<String>(this.jwtTokenStore, HttpStatus.OK);
@@ -206,7 +274,11 @@ public class LoginController {
 		return null;
 	}
 	
-	
+	/**
+	 * set jwtToken
+	 * @param tokenRefresh
+	 * @return status
+	 */
 	@RequestMapping(value = "/setJwtToken", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<String> setJwtToken(@RequestBody String tokenRefresh) {
@@ -216,7 +288,11 @@ public class LoginController {
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 	
-		
+	/**
+	 * api clear cookie by set checkLogout status
+	 * @param checkLogout
+	 * @return status
+	 */
 	@RequestMapping(value = "/clearCookie", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<String> clearCookieFromLogout(@RequestBody boolean checkLogout) {
@@ -225,6 +301,11 @@ public class LoginController {
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 	
+	/**
+	 * api clear cookie in nodejs 
+	 * @param checkLogout
+	 * @return status
+	 */
 	@RequestMapping(value="clearCookieJs", method= RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<String> clearCookieNodeJS(@RequestBody String checkLogout){
@@ -233,6 +314,10 @@ public class LoginController {
 		}
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
+	/**
+	 * 
+	 * @return
+	 */
 	@RequestMapping(value = "/getCheckLogoutStatus", method = RequestMethod.GET)
 	@ResponseBody
 	public String getCheckLogoutStatus() {
@@ -254,7 +339,12 @@ public class LoginController {
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 	
-	
+	/**
+	 * get domainUrl
+	 * @param url
+	 * @return domain
+	 * @throws MalformedURLException
+	 */
 	private String getDomainUrl(String url) throws MalformedURLException {
 		URL uri;
 		String domain = null;
@@ -263,7 +353,10 @@ public class LoginController {
 		return domain.startsWith("www.") ? domain.substring(4) : domain;
 	}
 	
-	//Ham xu li domain URL
+	/**
+	 * add domain
+	 * @param url
+	 */
 	private void addDomainUrl(String url) {
 		String domain = null;
 		try {
@@ -278,9 +371,18 @@ public class LoginController {
 		}		
 	}
 	
-	//Ham authorization
+	/**
+	 * Ham authorization
+	 * @param request
+	 * @return userRole
+	 */
 	public  static String getUserRole(HttpServletRequest request) {
-		String userData = JwtUtil.getSubject(request, jwtTokenCookieName, signingKey);
+		String userData = null;
+		try {
+			userData = JwtUtil.getSubject(request, jwtTokenCookieName, signingKey);
+		} catch (Exception e) {
+			return null;
+		}
 		if(userData == null) return null;
 		ObjectMapper mapper = new ObjectMapper();
 		User user = null;
@@ -298,6 +400,27 @@ public class LoginController {
 		}
 		if(user!=null) {
 			return user.getRole().getName();
+		}
+		return null;
+	}
+	
+	/**
+	 * Get user's Info from jwtToken
+	 * @param jwtToken
+	 * @return user's Info Json
+	 */
+	@RequestMapping(value = "/getUserInfo", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<String> getUserInfo(@RequestParam(value= "jwtToken") String jwtToken) {
+		if(jwtToken != null) {
+			try {
+				String userJson = Jwts.parser().setSigningKey(signingKey.getBytes()).parseClaimsJws(jwtToken).getBody().getSubject();
+				return new ResponseEntity<String>(userJson, HttpStatus.OK);
+			} catch (Exception e) {
+				// TODO: handle exception
+				return null;
+			}
+			
 		}
 		return null;
 	}

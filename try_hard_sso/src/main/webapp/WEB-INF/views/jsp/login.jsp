@@ -7,7 +7,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 	<link href="/resources/css/bootstrap.min.css" rel="stylesheet">
     <link href="/resources/css/common.css" rel="stylesheet">
-	<title>Authentication Service</title>
+	<title>BK-SSO</title>
 </head>
 <body>
 <form method="POST" action="/login" modelAttribute="userFormLogin" class="form-signin">

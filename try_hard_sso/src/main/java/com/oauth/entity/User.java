@@ -17,6 +17,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
@@ -28,14 +29,21 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "users")
 public class User implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@Id
+//	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_id_gen")
+//	@SequenceGenerator(name="users_id_gen", sequenceName="users_id_seq")
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "id")
+	@Column(name = "id", unique=true, nullable=false)
 	private int id;
 	
 	@Column(name = "username", nullable = false, unique = true)
 	private String username;
-	
+
 	@Column(name = "password", nullable = false)
 	private String password;
 	
@@ -66,7 +74,7 @@ public class User implements Serializable {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-
+	
 	public String getPassword() {
 		return password;
 	}

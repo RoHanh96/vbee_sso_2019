@@ -20,9 +20,9 @@ public class UserValidatorEdit implements Validator {
 	}
 	
 	@Override
-    public void validate(Object o, Errors errors) {
-        User user = (User) o;
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "username", "NotEmpty");
+	public void validate(Object o, Errors errors) {
+		User user = (User) o;
+		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "username", "NotEmpty");
         if (user.getUsername().length() < 6 || user.getUsername().length() > 32) {
             errors.rejectValue("username", "Size.userForm.username");
         }
@@ -39,5 +39,5 @@ public class UserValidatorEdit implements Validator {
         if (userInDB1 != null && !(userInDB1.getEmail().equalsIgnoreCase(userInDB.getEmail()))) {
             errors.rejectValue("email", "Duplicate.userForm.email");
         }
-    }
+	}
 }

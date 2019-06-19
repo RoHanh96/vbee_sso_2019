@@ -93,10 +93,13 @@ public class JwtFilter extends OncePerRequestFilter {
 			//Khi client A logout thi cookie trong client B van con
 			else {
 				CookieUtil.clear(response, jwtTokenSessionName, domainClient);
-//				String authService = this.getFilterConfig().getInitParameter("services.auth");
-//				String redirectUrl = request.getRequestURL().toString();
-//				System.out.println("Lan dang nhap dau tien ");
-//				response.sendRedirect(authService + "?callbackUrl=" + redirectUrl);
+				RestTemplate rest = new RestTemplate();
+				boolean checkLogout = true;
+				rest.postForObject("http://localhost:8081/clearCookie", checkLogout, String.class);
+				String authService = this.getFilterConfig().getInitParameter("services.auth");
+				String redirectUrl = request.getRequestURL().toString();
+				System.out.println("Lan dang nhap dau tien ");
+				response.sendRedirect(authService + "?callbackUrl=" + redirectUrl);
 			}
 			
 		}

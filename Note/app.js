@@ -138,6 +138,26 @@ async function handleRedirect(req, res, next){
       console.log("dang nhap lan thu 2");
       next();
     }
+    else{
+      res.clearCookie("access-token");
+      let checkLogout = "1";
+      const options = {
+        method: "post",
+        url: con.ssoUrl + "/clearCookieJs",
+        data: {
+          checkLogout: checkLogout
+        }
+      };
+      try {
+        await axios(options);
+      }catch (e) {
+        console.log(e);
+      }
+      let fullUrl = req.protocol + '://' + req.get('host');
+      const  targetUrl = targetBaseUrl + "?callbackUrl=" + fullUrl;
+      console.log("dang nhap lan dau");
+      res.redirect(targetUrl);
+    }
   }
 
 }

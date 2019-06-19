@@ -39,7 +39,7 @@
 							<td>${user.getEmail()}</td>
 							<td>${user.getRole().getName()}</td>
 								<td><a href="<c:url value='/edit-user-${user.getId()}' />" class="btn btn-success custom-width">Sửa</a></td>
-								<td><a href="<c:url value='/delete-user-${user.getId()}' />" class="btn btn-danger custom-width">Xóa</a></td>
+								<td><a href="<c:url value='/delete-user-${user.getId()}' />" class="btn btn-danger custom-width" onclick="return confirm('Bạn chắc chắn muốn xóa người dùng này chứ?')">Xóa</a></td>
 						</tr>
 					</c:forEach>
 		    		</tbody>
